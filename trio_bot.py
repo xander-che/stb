@@ -22,17 +22,6 @@ LOG_BOT_TOKEN = os.environ["LOG_BOT_TOKEN"]
 B_ID = os.environ["B_ID"]
 INTERVALS = [(CandleInterval.CANDLE_INTERVAL_HOUR, '1', 168), (CandleInterval.CANDLE_INTERVAL_4_HOUR, '4', 720)]
 # INTERVALS = [(CandleInterval.CANDLE_INTERVAL_4_HOUR, '4')]
-# LB_ID = os.environ["LB_ID"]
-
-# logging.basicConfig(level=logging.INFO,
-#                     filename='trade_bot_log.log',
-#                     filemode='w',
-#                     format='%(name)s %(asctime)s %(levelname)s %(message)s')
-# logging.debug('Debug message')
-# logging.info('Information message')
-# logging.warning('Warning message')
-# logging.error('Error message')
-# logging.critical('Critical Error message')
 
 
 def get_logger():

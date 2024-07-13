@@ -18,6 +18,7 @@ final_df_columns = [
                     'previous_rsi'
                     ]
 
+
 df_columns = ['fname',
               'time',
               'volume',
