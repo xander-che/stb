@@ -172,7 +172,6 @@ def get_futures_candles(futures, client, data: list, logger):
                                                             interval=interval[0])
                 except Exception as exc:
                     if counter == 0:
-                        # logger.exception(f': {exc.__class__}, {exc}')
                         logger.exception(f': {exc}')
                     candle = None
                     counter += 1

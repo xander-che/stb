@@ -27,3 +27,4 @@ df_columns = ['fname',
               'high',
               'low',
               'is_complete']
+
