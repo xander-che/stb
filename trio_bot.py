@@ -5,9 +5,9 @@ import telegram
 import schedule
 import asyncio
 import logging
-from datetime import timedelta
 from tinkoff.invest import Client, CandleInterval, HistoricCandle
 from tinkoff.invest.utils import now
+from datetime import timedelta
 from ta.trend import MACD, EMAIndicator
 from ta.momentum import RSIIndicator
 from adata import final_df_columns
@@ -332,7 +332,7 @@ def run():
         logger.info(f': No signals. {len(final_df)} lines in data')
     async_loop(send_logs(logger))
     logger.handlers = []
-    print(final_df)
+    # print(final_df)
 
 
 if __name__ == "__main__":
