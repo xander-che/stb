@@ -1,0 +1,4 @@
+python-telegram-bot==21.4
+schedule==1.2.0
+ta==0.10.2
+tinkoff==0.1.1
