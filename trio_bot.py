@@ -7,7 +7,7 @@ import asyncio
 import logging
 from tinkoff.invest import Client, CandleInterval, HistoricCandle
 from tinkoff.invest.utils import now
-from datetime import timedelta
+from datetime import timedelta, datetime
 from ta.trend import MACD, EMAIndicator
 from ta.momentum import RSIIndicator
 from adata import final_df_columns
@@ -21,7 +21,6 @@ BOT_TOKEN = os.environ["BOT_TOKEN"]
 LOG_BOT_TOKEN = os.environ["LOG_BOT_TOKEN"]
 B_ID = os.environ["B_ID"]
 INTERVALS = [(CandleInterval.CANDLE_INTERVAL_HOUR, '1', 168), (CandleInterval.CANDLE_INTERVAL_4_HOUR, '4', 720)]
-# INTERVALS = [(CandleInterval.CANDLE_INTERVAL_4_HOUR, '4')]
 
 
 def get_logger():
@@ -78,6 +77,14 @@ def get_ma40(row: pd.Series):
 
 def get_interval(row: pd.Series):
     return row.interval
+
+
+def check_date(data_today):
+    today = datetime.today()
+    if data_today.date() == today.date():
+        return True
+    else:
+        return False
 
 
 def get_ema_short(row: pd.Series, epsilon: float):  # epsilon = 0.0001
@@ -145,17 +152,18 @@ def get_signal(final_df: pd.DataFrame):
         ticker = get_ticker(row)
         asset_type = get_type(row)
         name = get_name(row)
+        data_today = final_df.iloc[i]['time']
         close_hour = final_df.iloc[i]['time'] + timedelta(hours=3)
-        # close_hour = close_hour.hour
         ema_short = get_ema_short(row, 0.0001)
         ema_long = get_ema_long(row, 0.0001)
         macd_short = get_macd_short(row, 0.05)
         macd_long = get_macd_long(row, 0.05)
         rsi_short = get_rsi_short(row)
         rsi_long = get_rsi_long(row)
-        if ema_short is True and macd_short is True and rsi_short is True:
+        date_check = check_date(data_today)
+        if ema_short is True and macd_short is True and rsi_short is True and date_check is True:
             res.append([name, tf, 'SHORT', close_hour, ticker, asset_type, ma40])
-        elif ema_long is True and macd_long is True and rsi_long is True:
+        elif ema_long is True and macd_long is True and rsi_long is True and date_check is True:
             res.append([name, tf, 'LONG', close_hour, ticker, asset_type, ma40])
     return res
 
@@ -209,7 +217,6 @@ def get_futures_candles(futures, client, data: list, logger):
 def get_shares_candles(shares, client, data: list, logger):
     for interval in INTERVALS:
         counter = 0
-        test_count = 0
         for item in shares.instruments:
             if item.currency == 'rub':
                 try:
@@ -219,7 +226,6 @@ def get_shares_candles(shares, client, data: list, logger):
                                                             interval=interval[0])
                 except Exception as exc:
                     if counter == 0:
-                        # logger.exception(f': {exc.__class__}, {exc}')
                         logger.exception(f': {exc}')
                     candle = None
                     counter += 1
@@ -264,7 +270,6 @@ def get_hour_data(client, logger):
 
 
 async def send_to_bot(response: list, logger):
-    # today = str(date.today())
     if len(response) == 0:
         response = [["test", "message", "for bot", "00", "00", "00", "00"]]
     bot = telegram.Bot(token=BOT_TOKEN)
@@ -274,7 +279,6 @@ async def send_to_bot(response: list, logger):
         name = f'<b>{item[0]}</b>\n'
         tf = f'Time Frame = {item[1]} h\n'
         stype = f'Signal type = {item[2]}\n'
-        # date_time = f'{today}  {item[3]}:00\n'
         date_time = f'{item[3]}\n'
         ticker = f'Ticker = {item[4]}\n'
         tp = f'Type = {item[5]}\n'
@@ -332,7 +336,7 @@ def run():
         logger.info(f': No signals. {len(final_df)} lines in data')
     async_loop(send_logs(logger))
     logger.handlers = []
-    # print(final_df)
+    del final_df
 
 
 if __name__ == "__main__":
@@ -341,7 +345,7 @@ if __name__ == "__main__":
         main_logger.info(': Program started')
         async_loop(send_logs(main_logger))
         main_logger.handlers = []
-        schedule.every().hour.at(':01').do(run)
+        schedule.every().hour.at(':06').do(run)
 
         while True:
             try:
