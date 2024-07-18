@@ -20,6 +20,7 @@ INVEST_TOKEN = os.environ["T_SAND_BOX"]
 BOT_TOKEN = os.environ["BOT_TOKEN"]
 LOG_BOT_TOKEN = os.environ["LOG_BOT_TOKEN"]
 B_ID = os.environ["B_ID"]
+CHAT_ID = os.environ["CHAT_ID"]
 INTERVALS = [(CandleInterval.CANDLE_INTERVAL_HOUR, '1', 168), (CandleInterval.CANDLE_INTERVAL_4_HOUR, '4', 720)]
 
 
@@ -294,11 +295,12 @@ async def send_to_bot(response: list, logger):
         msg.append('\n')
 
         text = ''.join(msg)
-        try:
-            await bot.send_message(chat_id=B_ID, text=text, parse_mode=telegram.constants.ParseMode.HTML)
-        except telegram.error.BadRequest as exc:
-            logger.exception(f': {exc}')
-        time.sleep(3)
+        async with bot:
+            try:
+                await bot.send_message(chat_id=CHAT_ID, text=text, parse_mode=telegram.constants.ParseMode.HTML)
+            except telegram.error.BadRequest as exc:
+                logger.exception(f': {exc}')
+            time.sleep(3)
 
 
 async def send_logs(logger):
@@ -316,10 +318,11 @@ async def send_logs(logger):
         line = f'{item}\n'
         msg.append(line)
     text = ''.join(msg)
-    try:
-        await log_bot.send_message(chat_id=B_ID, text=text, parse_mode=telegram.constants.ParseMode.HTML)
-    except telegram.error.BadRequest as exc:
-        logger.exception(f': {exc}')
+    async with log_bot:
+        try:
+            await log_bot.send_message(chat_id=B_ID, text=text, parse_mode=telegram.constants.ParseMode.HTML)
+        except telegram.error.BadRequest as exc:
+            logger.exception(f': {exc}')
 
 
 def run():
@@ -345,7 +348,7 @@ if __name__ == "__main__":
         main_logger.info(': Program started')
         async_loop(send_logs(main_logger))
         main_logger.handlers = []
-        schedule.every().hour.at(':06').do(run)
+        schedule.every().hour.at(':01').do(run)
 
         while True:
             try:
