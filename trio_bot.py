@@ -154,7 +154,13 @@ def get_signal(final_df: pd.DataFrame):
         asset_type = get_type(row)
         name = get_name(row)
         data_today = final_df.iloc[i]['time']
-        close_hour = final_df.iloc[i]['time'] + timedelta(hours=3)
+        close_datetime3 = final_df.iloc[i]['time'] + timedelta(hours=3)
+        close_date = str(close_datetime3.date())
+        close_time = close_datetime3.time()
+        if close_time.minute == 0:
+            close_datetime = f'{close_date} {close_time.hour}:00'
+        else:
+            close_datetime = f'{close_date} {close_time.hour}:{close_time.minute}'
         ema_short = get_ema_short(row, 0.0001)
         ema_long = get_ema_long(row, 0.0001)
         macd_short = get_macd_short(row, 0.05)
@@ -163,9 +169,9 @@ def get_signal(final_df: pd.DataFrame):
         rsi_long = get_rsi_long(row)
         date_check = check_date(data_today)
         if ema_short is True and macd_short is True and rsi_short is True and date_check is True:
-            res.append([name, tf, 'SHORT', close_hour, ticker, asset_type, ma40])
+            res.append([name, tf, 'SHORT', close_datetime, ticker, asset_type, ma40])
         elif ema_long is True and macd_long is True and rsi_long is True and date_check is True:
-            res.append([name, tf, 'LONG', close_hour, ticker, asset_type, ma40])
+            res.append([name, tf, 'LONG', close_datetime, ticker, asset_type, ma40])
     return res
 
 
@@ -286,8 +292,8 @@ async def send_to_bot(response: list, logger):
         ma40 = f'ma40 = {item[6]:.4f}\n'
         msg.append(header)
         msg.append(date_time)
-        msg.append(tp)
         msg.append(name)
+        msg.append(tp)
         msg.append(ticker)
         msg.append(tf)
         msg.append(stype)
