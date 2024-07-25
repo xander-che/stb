@@ -368,7 +368,7 @@ if __name__ == "__main__":
         main_logger.info(': Program started')
         async_loop(send_logs(main_logger))
         main_logger.handlers = []
-        schedule.every().hour.at(':18').do(run)
+        schedule.every().hour.at(':01').do(run)
 
         while True:
             try:
