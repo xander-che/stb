@@ -7,7 +7,7 @@ import asyncio
 import logging
 from tinkoff.invest import Client, CandleInterval, HistoricCandle
 from tinkoff.invest.utils import now
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, timezone
 from ta.trend import MACD, EMAIndicator
 from ta.momentum import RSIIndicator
 from adata import final_df_columns
@@ -82,10 +82,18 @@ def get_interval(row: pd.Series):
 
 def check_date(data_today):
     today = datetime.today()
+    result = False
     if data_today.date() == today.date():
-        return True
-    else:
-        return False
+        result = True
+    return result
+
+
+def check_4h_candle(data_today):
+    result = False
+    four_h_ago = datetime.now(timezone.utc) - timedelta(hours=4)
+    if data_today.hour == four_h_ago.hour:
+        result = True
+    return result
 
 
 def get_ema_short(row: pd.Series, epsilon: float):  # epsilon = 0.0001
@@ -161,13 +169,19 @@ def get_signal(final_df: pd.DataFrame):
             close_datetime = f'{close_date} {close_time.hour}:00'
         else:
             close_datetime = f'{close_date} {close_time.hour}:{close_time.minute}'
+        date_check = check_date(data_today)
+        if tf == '4':
+            hour_check = check_4h_candle(data_today)
+            if not hour_check:
+                tf += '*'
+        # else:
+        #     hour_check = True
         ema_short = get_ema_short(row, 0.0001)
         ema_long = get_ema_long(row, 0.0001)
         macd_short = get_macd_short(row, 0.05)
         macd_long = get_macd_long(row, 0.05)
         rsi_short = get_rsi_short(row)
         rsi_long = get_rsi_long(row)
-        date_check = check_date(data_today)
         if ema_short is True and macd_short is True and rsi_short is True and date_check is True:
             res.append([name, tf, 'SHORT', close_datetime, ticker, asset_type, ma40])
         elif ema_long is True and macd_long is True and rsi_long is True and date_check is True:
@@ -354,7 +368,7 @@ if __name__ == "__main__":
         main_logger.info(': Program started')
         async_loop(send_logs(main_logger))
         main_logger.handlers = []
-        schedule.every().hour.at(':01').do(run)
+        schedule.every().hour.at(':18').do(run)
 
         while True:
             try:
