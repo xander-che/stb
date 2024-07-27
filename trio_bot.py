@@ -72,10 +72,6 @@ def get_type(row: pd.Series):
     return row.type
 
 
-# def get_ma40(row: pd.Series):
-#     return row.ma40
-
-
 def get_close(row: pd.Series):
     return row.close
 
