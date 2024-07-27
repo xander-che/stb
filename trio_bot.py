@@ -212,7 +212,6 @@ def get_futures_candles(futures, client, data: list, logger):
                             if df.is_complete.iloc[-1]:
                                 df = df.drop('is_complete', axis=1)
                                 df['interval'] = interval[1]
-                                # df['ma40'] = EMAIndicator(close=df['close'], window=40).ema_indicator()
                                 df['ticker'] = item.ticker
                                 df['type'] = 'futures'
                                 df['ema'] = EMAIndicator(close=df['close'], window=10).ema_indicator()
@@ -257,7 +256,6 @@ def get_shares_candles(shares, client, data: list, logger):
                             if df.is_complete.iloc[-1]:
                                 df = df.drop('is_complete', axis=1)
                                 df['interval'] = interval[1]
-                                # df['ma40'] = EMAIndicator(close=df['close'], window=40).ema_indicator()
                                 df['ticker'] = item.ticker
                                 df['type'] = 'shares'
                                 df['ema'] = EMAIndicator(close=df['close'], window=10).ema_indicator()
