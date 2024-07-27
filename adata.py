@@ -7,7 +7,6 @@ final_df_columns = [
                     'high',
                     'low',
                     'interval',
-                    'ma40',
                     'ticker',
                     'type',
                     'ema',

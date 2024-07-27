@@ -72,8 +72,12 @@ def get_type(row: pd.Series):
     return row.type
 
 
-def get_ma40(row: pd.Series):
-    return row.ma40
+# def get_ma40(row: pd.Series):
+#     return row.ma40
+
+
+def get_close(row: pd.Series):
+    return row.close
 
 
 def get_interval(row: pd.Series):
@@ -157,7 +161,7 @@ def get_signal(final_df: pd.DataFrame):
     for i in range(len(final_df)):
         row = final_df.iloc[i, :]
         tf = get_interval(row)
-        ma40 = get_ma40(row)
+        close = get_close(row)
         ticker = get_ticker(row)
         asset_type = get_type(row)
         name = get_name(row)
@@ -172,20 +176,18 @@ def get_signal(final_df: pd.DataFrame):
         date_check = check_date(data_today)
         if tf == '4':
             hour_check = check_4h_candle(data_today)
-            if not hour_check:
-                tf += '*'
-        # else:
-        #     hour_check = True
+        else:
+            hour_check = True
         ema_short = get_ema_short(row, 0.0001)
         ema_long = get_ema_long(row, 0.0001)
         macd_short = get_macd_short(row, 0.05)
         macd_long = get_macd_long(row, 0.05)
         rsi_short = get_rsi_short(row)
         rsi_long = get_rsi_long(row)
-        if ema_short is True and macd_short is True and rsi_short is True and date_check is True:
-            res.append([name, tf, 'SHORT', close_datetime, ticker, asset_type, ma40])
-        elif ema_long is True and macd_long is True and rsi_long is True and date_check is True:
-            res.append([name, tf, 'LONG', close_datetime, ticker, asset_type, ma40])
+        if ema_short is True and macd_short is True and rsi_short is True and date_check is True and hour_check is True:
+            res.append([name, tf, 'SHORT', close_datetime, ticker, asset_type, close])
+        elif ema_long is True and macd_long is True and rsi_long is True and date_check is True and hour_check is True:
+            res.append([name, tf, 'LONG', close_datetime, ticker, asset_type, close])
     return res
 
 
@@ -214,7 +216,7 @@ def get_futures_candles(futures, client, data: list, logger):
                             if df.is_complete.iloc[-1]:
                                 df = df.drop('is_complete', axis=1)
                                 df['interval'] = interval[1]
-                                df['ma40'] = EMAIndicator(close=df['close'], window=40).ema_indicator()
+                                # df['ma40'] = EMAIndicator(close=df['close'], window=40).ema_indicator()
                                 df['ticker'] = item.ticker
                                 df['type'] = 'futures'
                                 df['ema'] = EMAIndicator(close=df['close'], window=10).ema_indicator()
@@ -259,7 +261,7 @@ def get_shares_candles(shares, client, data: list, logger):
                             if df.is_complete.iloc[-1]:
                                 df = df.drop('is_complete', axis=1)
                                 df['interval'] = interval[1]
-                                df['ma40'] = EMAIndicator(close=df['close'], window=40).ema_indicator()
+                                # df['ma40'] = EMAIndicator(close=df['close'], window=40).ema_indicator()
                                 df['ticker'] = item.ticker
                                 df['type'] = 'shares'
                                 df['ema'] = EMAIndicator(close=df['close'], window=10).ema_indicator()
@@ -303,7 +305,7 @@ async def send_to_bot(response: list, logger):
         date_time = f'{item[3]}\n'
         ticker = f'Ticker = {item[4]}\n'
         tp = f'Type = {item[5]}\n'
-        ma40 = f'ma40 = {item[6]:.4f}\n'
+        close = f'Close = {item[6]:.4f}\n'
         msg.append(header)
         msg.append(date_time)
         msg.append(name)
@@ -311,7 +313,7 @@ async def send_to_bot(response: list, logger):
         msg.append(ticker)
         msg.append(tf)
         msg.append(stype)
-        msg.append(ma40)
+        msg.append(close)
         msg.append('\n')
 
         text = ''.join(msg)
