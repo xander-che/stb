@@ -5,3 +5,5 @@
 /.ipynb_checkpoints/extremum-checkpoint.ipynb
 /.ipynb_checkpoints/main-checkpoint.py
 /dev_test_trio_bot.py
+/output.xlsx
+/experiments.py
