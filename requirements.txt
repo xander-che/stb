@@ -4,4 +4,4 @@ schedule==1.2.0
 numpy==1.26.4
 ta==0.10.2
 tinkoff==0.1.1
-tinkoff-investments==0.2.0b108
+tinkoff-investments==0.2.0b110
