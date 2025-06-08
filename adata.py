@@ -27,9 +27,9 @@ df_columns = ['fname',
               'low',
               'is_complete']
 
-minutes_hour = ['1']
+minutes_hour = ['2']
 
 minutes_05 = ['0', '5', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55']
 
-minutes_15 = ['0', '15', '30', '45']
+minutes_15 = ['1', '16', '31', '46']
 
