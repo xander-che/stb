@@ -199,7 +199,7 @@ def get_futures_candles(futures, client, data: list, logger):
                                     df = df.drop('is_complete', axis=1)
                                     df['interval'] = interval[1]
                                     df['ticker'] = item.ticker
-                                    df['type'] = 'фьючерсы'
+                                    df['type'] = 'ФЬЮЧЕРСЫ'
                                     df['ema'] = EMAIndicator(close=df['close'], window=10).ema_indicator()
                                     df['macd'] = MACD(close=df['close']).macd()
                                     df['macd_signal'] = MACD(close=df['close']).macd_signal()
@@ -244,7 +244,7 @@ def get_shares_candles(shares, client, data: list, logger):
                                     df = df.drop('is_complete', axis=1)
                                     df['interval'] = interval[1]
                                     df['ticker'] = item.ticker
-                                    df['type'] = 'акции'
+                                    df['type'] = 'АКЦИИ'
                                     df['ema'] = EMAIndicator(close=df['close'], window=10).ema_indicator()
                                     df['macd'] = MACD(close=df['close']).macd()
                                     df['macd_signal'] = MACD(close=df['close']).macd_signal()
@@ -291,7 +291,6 @@ async def send_to_bot(response: list, logger):
         donate = '<a href="https://pay.cloudtips.ru/p/84a972ea">Поддержать проект STB:</a>'
         msg.append(header)
         msg.append(empty_str)
-        msg.append(date_time)
         msg.append(name)
         msg.append(tp)
         msg.append(ticker)
@@ -299,7 +298,8 @@ async def send_to_bot(response: list, logger):
         msg.append(stype)
         msg.append(close)
         msg.append(empty_str)
-        if random.choice(list_range_10) == 5:
+        msg.append(date_time)
+        if random.choice(list_range_10) == 7:
             msg.append(donate)
 
         text = ''.join(msg)
