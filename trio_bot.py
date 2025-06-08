@@ -11,8 +11,7 @@ from tinkoff.invest.utils import now
 from datetime import timedelta, datetime
 from ta.trend import MACD, EMAIndicator
 from ta.momentum import RSIIndicator
-from adata import final_df_columns, minutes_hour, minutes_05, minutes_15
-
+from adata import final_df_columns, minutes_hour, minutes_05, minutes_15, list_range_10
 
 INVEST_TOKEN = os.environ["T_SAND_BOX"]
 BOT_TOKEN = os.environ["BOT_TOKEN"]
@@ -300,7 +299,7 @@ async def send_to_bot(response: list, logger):
         msg.append(stype)
         msg.append(close)
         msg.append(empty_str)
-        if random.randint(1, 4) == random.choice([1, 2, 3, 4, 5]):
+        if random.choice(list_range_10) == 5:
             msg.append(donate)
 
         text = ''.join(msg)
