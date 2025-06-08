@@ -176,9 +176,7 @@ def get_signal(final_df: pd.DataFrame):
 def get_futures_candles(futures, client, data: list, logger):
     for interval in INTERVALS:
         counter = 0
-        print(__name__, datetime.now().minute, 'минут')
         if str(datetime.now().minute) in interval[3]:
-            print(__name__, 'фьючерсы, совпадение по интервалу ', interval[1])
             for item in futures.instruments:
                 if item.asset_type == 'TYPE_COMMODITY':
                     try:
@@ -224,9 +222,7 @@ def get_futures_candles(futures, client, data: list, logger):
 def get_shares_candles(shares, client, data: list, logger):
     for interval in INTERVALS:
         counter = 0
-        print(__name__, datetime.now().minute, 'минут')
         if str(datetime.now().minute) in interval[3]:
-            print(__name__, 'акции, совпадение по интервалу ', interval[1])
             for item in shares.instruments:
                 if item.currency == 'rub':
                     try:
