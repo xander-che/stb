@@ -11,7 +11,7 @@ from tinkoff.invest.utils import now
 from datetime import timedelta, datetime
 from ta.trend import MACD, EMAIndicator
 from ta.momentum import RSIIndicator
-from adata import final_df_columns, minutes_hour, minutes_05, minutes_15, list_range_10
+from adata import final_df_columns, minutes_hour, minutes_05, minutes_15, list_range
 
 INVEST_TOKEN = os.environ["T_SAND_BOX"]
 BOT_TOKEN = os.environ["BOT_TOKEN"]
@@ -83,6 +83,24 @@ def check_date(data_today):
     if data_today.date() == today.date():
         result = True
     return result
+
+
+def formatted_datetime(raw_datetime: str):
+    raw_year = raw_datetime[:4]
+    raw_month = raw_datetime[5:7]
+    raw_day = raw_datetime[8:10]
+    slash = '/'
+    space = ' '
+    colon = ':'
+    raw_time = raw_datetime[11:]
+    raw_hour = raw_time.split(':')[0]
+    raw_minute = raw_time.split(':')[1]
+    if len(raw_hour) == 1:
+        raw_hour = f'0{raw_hour}'
+    if len(raw_minute) == 1:
+        raw_minute = f'0{raw_minute}'
+    raw_time = f'{raw_hour}{colon}{raw_minute}'
+    return f'{raw_day}{slash}{raw_month}{slash}{raw_year}{space}{raw_time}'
 
 
 def get_ema_short(row: pd.Series, epsilon: float):  # epsilon = 0.0001
@@ -284,7 +302,7 @@ async def send_to_bot(response: list, logger):
         name = f'<b>{item[0]}</b>\n'
         tf = f'Временной интервал = {item[1]}\n'
         stype = f'Тип сигнала = {item[2]}\n'
-        date_time = f'{item[3]}\n'
+        date_time = f'{formatted_datetime(item[3])}\n'
         ticker = f'Тикер = {item[4]}\n'
         tp = f'Тип инструмента = {item[5]}\n'
         close = f'Цена закрытия = {item[6]:.4f}\n'
@@ -297,9 +315,9 @@ async def send_to_bot(response: list, logger):
         msg.append(tf)
         msg.append(stype)
         msg.append(close)
-        msg.append(empty_str)
         msg.append(date_time)
-        if random.choice(list_range_10) == 7:
+        msg.append(empty_str)
+        if random.choice(list_range) == 7:
             msg.append(donate)
 
         text = ''.join(msg)
