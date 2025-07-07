@@ -297,15 +297,18 @@ async def send_to_bot(response: list, logger):
     bot = telegram.Bot(token=BOT_TOKEN)
     for item in response:
         msg = list()
-        header = f'<b>--TRIO-- {item[1]}</b>\n'
+        if item[2] == 'SHORT':
+            header = f'<b>--TRI🔴-- {item[1]}</b>\n'
+        else:
+            header = f'<b>--TRI🟢-- {item[1]}</b>\n'
         empty_str = ' \n'
         name = f'<b>{item[0]}</b>\n'
-        tf = f'Временной интервал = {item[1]}\n'
-        stype = f'Тип сигнала = {item[2]}\n'
+        tf = f'Интервал: {item[1]}\n'
+        stype = f'Тип сигнала: {item[2]}\n'
         date_time = f'{formatted_datetime(item[3])}\n'
-        ticker = f'Тикер = {item[4]}\n'
-        tp = f'Тип инструмента = {item[5]}\n'
-        close = f'Цена закрытия = {item[6]:.4f}\n'
+        ticker = f'Тикер: {item[4]}\n'
+        tp = f'Тип инструмента: {item[5]}\n'
+        close = f'Цена закрытия: {item[6]:.4f}\n'
         donate = '<a href="https://pay.cloudtips.ru/p/84a972ea">Поддержать проект STB:</a>'
         msg.append(header)
         msg.append(empty_str)
