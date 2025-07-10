@@ -11,16 +11,16 @@ from tinkoff.invest.utils import now
 from datetime import timedelta, datetime
 from ta.trend import MACD, EMAIndicator
 from ta.momentum import RSIIndicator
-from adata import final_df_columns, minutes_hour, minutes_05, minutes_15, list_range
+from adata import final_df_columns, minutes_hour, minutes_30, minutes_15, list_range
 
 INVEST_TOKEN = os.environ["T_SAND_BOX"]
 BOT_TOKEN = os.environ["BOT_TOKEN"]
 LOG_BOT_TOKEN = os.environ["LOG_BOT_TOKEN"]
 B_ID = os.environ["B_ID"]
 CHAT_ID = os.environ["CHAT_ID"]
-INTERVALS = [(CandleInterval.CANDLE_INTERVAL_HOUR, '1 час', 168, minutes_hour),
-             (CandleInterval.CANDLE_INTERVAL_5_MIN, '5 минут', 24, minutes_05),
-             (CandleInterval.CANDLE_INTERVAL_15_MIN, '15 минут', 24, minutes_15)]
+INTERVALS = [(CandleInterval.CANDLE_INTERVAL_15_MIN, '15 минут', 24, minutes_15),
+             (CandleInterval.CANDLE_INTERVAL_30_MIN, '30 минут', 48, minutes_30),
+             (CandleInterval.CANDLE_INTERVAL_HOUR, '1 час', 168, minutes_hour)]
 
 
 def get_logger():
