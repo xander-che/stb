@@ -11,7 +11,7 @@ from tinkoff.invest.utils import now
 from datetime import timedelta, datetime
 from ta.trend import MACD, EMAIndicator
 from ta.momentum import RSIIndicator
-from adata import final_df_columns, minutes_hour, minutes_30, minutes_15, list_range
+from adata import final_df_columns, minutes_hour, minutes_30, minutes_15, list_range, send_logs_schedule
 
 INVEST_TOKEN = os.environ["T_SAND_BOX"]
 BOT_TOKEN = os.environ["BOT_TOKEN"]
@@ -168,7 +168,7 @@ def get_signal(final_df: pd.DataFrame):
         ticker = get_ticker(row)
         asset_type = get_type(row)
         name = get_name(row)
-        data_today = final_df.iloc[i]['time']
+        date_today = final_df.iloc[i]['time']
         close_datetime3 = final_df.iloc[i]['time'] + timedelta(hours=3)
         close_date = str(close_datetime3.date())
         close_time = datetime.now().time()
@@ -176,7 +176,7 @@ def get_signal(final_df: pd.DataFrame):
             close_datetime = f'{close_date} {close_time.hour}:00'
         else:
             close_datetime = f'{close_date} {close_time.hour}:{close_time.minute}'
-        date_check = check_date(data_today)
+        date_check = check_date(date_today)
         ema_short = get_ema_short(row, 0.0001)
         ema_long = get_ema_long(row, 0.0001)
         macd_short = get_macd_short(row, 0.05)
@@ -339,19 +339,20 @@ async def send_logs(logger):
             logs.append(line[:-1])
     if len(logs) == 0:
         logs.append('No logs INFO')
-    log_bot = telegram.Bot(token=LOG_BOT_TOKEN)
-    msg = list()
-    msg.append('LOG INFO\n')
-    logs = logs[:7]
-    for item in logs:
-        line = f'{item}\n'
-        msg.append(line)
-    text = ''.join(msg)
-    async with log_bot:
-        try:
-            await log_bot.send_message(chat_id=B_ID, text=text, parse_mode=telegram.constants.ParseMode.HTML)
-        except telegram.error.BadRequest as exc:
-            logger.exception(f': {exc}')
+    if str(datetime.now().minute) in send_logs_schedule or ': Program started' in logs[0]:
+        log_bot = telegram.Bot(token=LOG_BOT_TOKEN)
+        msg = list()
+        msg.append('LOG INFO\n')
+        logs = logs[:7]
+        for item in logs:
+            line = f'{item}\n'
+            msg.append(line)
+        text = ''.join(msg)
+        async with log_bot:
+            try:
+                await log_bot.send_message(chat_id=B_ID, text=text, parse_mode=telegram.constants.ParseMode.HTML)
+            except telegram.error.BadRequest as exc:
+                logger.exception(f': {exc}')
 
 
 def run():
