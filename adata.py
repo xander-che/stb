@@ -35,5 +35,5 @@ minutes_30 = ['1', '31']
 
 list_range = [i for i in range(128)]
 
-send_logs_schedule = [str(i) for i in range(0, 60, 5)]
+send_logs_schedule = [i for i in range(10)]
 

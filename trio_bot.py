@@ -6,6 +6,7 @@ import telegram
 import schedule
 import asyncio
 import logging
+from telegram.error import TelegramError
 from tinkoff.invest import Client, CandleInterval, HistoricCandle
 from tinkoff.invest.utils import now
 from datetime import timedelta, datetime
@@ -25,12 +26,27 @@ INTERVALS = [(CandleInterval.CANDLE_INTERVAL_15_MIN, '15 минут', 24, minute
 
 def get_logger():
     logger = logging.getLogger(__name__)
+    if logger.handlers:
+        return logger
     logger.setLevel(logging.INFO)
-    handler = logging.FileHandler(filename='trade_bot_log.log', mode='w')
+    handler = logging.FileHandler(filename='trade_bot_log.log', mode='a')
     formatter = logging.Formatter('%(name)s %(asctime)s %(levelname)s %(message)s')
     handler.setFormatter(formatter)
     logger.addHandler(handler)
+    logger.propagate = False
     return logger
+
+
+def clear_log_file(logger):
+    for handler in logger.handlers:
+        if isinstance(handler, logging.FileHandler):
+            handler.close()
+            logger.removeHandler(handler)
+    with open('trade_bot_log.log', 'w'):
+        pass
+    new_handler = logging.FileHandler(filename='trade_bot_log.log', mode='a')
+    new_handler.setFormatter(logging.Formatter('%(name)s %(asctime)s %(levelname)s %(message)s'))
+    logger.addHandler(new_handler)
 
 
 def async_loop(async_function):
@@ -327,40 +343,54 @@ async def send_to_bot(response: list, logger):
         async with bot:
             try:
                 await bot.send_message(chat_id=CHAT_ID, text=text, parse_mode=telegram.constants.ParseMode.HTML)
-            except telegram.error.BadRequest as exc:
-                logger.exception(f': {exc}')
-            time.sleep(1)
+            except TelegramError as exc:
+                logger.exception(f'Ошибка отправки: {exc}')
+                if "Too Many Requests" in str(e):
+                    delay = 2 + random.randint(0, 4)
+                else:
+                    delay = 1 + random.randint(0, 2)
+                await asyncio.sleep(delay)
+            finally:
+                delay = 1 + random.randint(-1, 1)
+                await asyncio.sleep(delay)
+
 
 
 async def send_logs(logger):
     logs = list()
-    with open("trade_bot_log.log") as log:
-        for line in log:
-            logs.append(line[:-1])
-    if len(logs) == 0:
+    try:
+        with open('trade_bot_log.log', 'r') as log_file:
+            logs = [line.strip() for line in log_file if line.strip()]
+    except Exception as exc:
+        logger.exception(f'Ошибка чтения логов: {exc}')
         logs.append('No logs INFO')
-    if str(datetime.now().minute) in send_logs_schedule or ': Program started' in logs[0]:
+    if (datetime.now().minute == random.choice(send_logs_schedule)
+            or int(datetime.now().minute % 10) == random.choice(send_logs_schedule)
+            or ': Program started' in logs[0]):
         log_bot = telegram.Bot(token=LOG_BOT_TOKEN)
-        msg = list()
-        msg.append('LOG INFO\n')
-        logs = logs[:7]
-        for item in logs:
-            line = f'{item}\n'
-            msg.append(line)
-        text = ''.join(msg)
+        msg = 'LOG INFO\n' + '\n'.join(logs)
+        if len(msg) > 4096:
+            start_idx = len(msg) - 4096
+            msg = msg[start_idx:]
+            logger.handlers.clear()
         async with log_bot:
             try:
                 await log_bot.send_message(chat_id=B_ID,
-                                           text=text,
-                                           parse_mode=telegram.constants.ParseMode.HTML,
-                                           connect_timeout=120.0)
-            except telegram.error.BadRequest as exc:
-                logger.exception(f': {exc}')
-
+                                           text=msg,
+                                           parse_mode=telegram.constants.ParseMode.HTML)
+                clear_log_file(logger)
+            except TelegramError as exc:
+                logger.exception(f"Ошибка отправки: {exc}")
+                if 'Too Many Requests' in str(exc):
+                    delay = 240 + random.randint(0, 60)
+                else:
+                    delay = 120 + random.randint(0, 30)
+                await asyncio.sleep(delay)
+            finally:
+                await asyncio.sleep(60 + random.randint(-10, 10))
 
 def run():
     logger = get_logger()
-    logger.info(': Run job')
     with Client(INVEST_TOKEN) as client:
         final_df = get_data(client, logger)
         response = get_signal(final_df)
@@ -371,7 +401,6 @@ def run():
     else:
         logger.info(f': No signals. {len(final_df)} lines in data')
     async_loop(send_logs(logger))
-    logger.handlers = []
     del final_df
 
 
@@ -391,11 +420,7 @@ if __name__ == "__main__":
                 main_logger = get_logger()
                 main_logger.exception(f': {e}')
                 async_loop(send_logs(main_logger))
-                main_logger.handlers = []
-
-            main_logger.handlers = []
     except Exception as e:
         main_logger = get_logger()
         main_logger.exception(f': {e}')
         async_loop(send_logs(main_logger))
-        main_logger.handlers = []
