@@ -350,7 +350,10 @@ async def send_logs(logger):
         text = ''.join(msg)
         async with log_bot:
             try:
-                await log_bot.send_message(chat_id=B_ID, text=text, parse_mode=telegram.constants.ParseMode.HTML)
+                await log_bot.send_message(chat_id=B_ID,
+                                           text=text,
+                                           parse_mode=telegram.constants.ParseMode.HTML,
+                                           connect_timeout=120.0)
             except telegram.error.BadRequest as exc:
                 logger.exception(f': {exc}')
 
